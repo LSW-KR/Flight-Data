@@ -1,0 +1,61 @@
+import pandas as pd
+import FinanceDataReader as fdr
+import datetime
+import mariadb
+import time
+
+krx = fdr.StockListing('KRX')
+
+corp_dict= {'003490':'대한항공','020560':'아시아나항공','298690':'에어부산','089590':'제주항공','272450':'진에어','091810':'티웨이항공'}
+start_dt = "20200101"
+end_dt = "20220530"
+
+
+def make_sql():
+    try:
+        sql = """
+        INSERT INTO airline.airline_cp  ( Date, close, code, name ) VALUES (?, ?, ?, ?)
+        """
+        return sql
+
+    except:
+        print("make_sql()error")
+
+def db_connect():
+
+    conn = mariadb.connect(
+    user='eBEST_MS', 
+    password='eBEST_MS1!', 
+    database='airline', 
+    host='175.193.254.239',
+    port=9926)
+    return conn
+
+
+def que_sql(sql,conn,df):
+    #try:
+    data = list(df.itertuples(index = False, name= None))
+    display(data)
+    cs = conn.cursor()
+
+
+    cs.executemany(sql, data)
+    conn.commit()
+    #except:
+    #    print("que_sql()error")
+         
+def main():
+    for keys,values in corp_dict.items():
+        item_list = []
+        close = fdr.DataReader(keys, start_dt ,end_dt)['Close']
+        item_list.append(close)
+        df = pd.concat(item_list, axis=1)
+        df = df.T
+        df = df.T.rename_axis('Date').reset_index()
+        df['Date']= df.Date.dt.strftime('%Y%m%d')
+        df['code'] = keys
+        df['name'] = values
+        
+        
+        que_sql(make_sql(),db_connect(),df)
+main()
