@@ -1,0 +1,201 @@
+from selenium import webdriver as wd
+from selenium.webdriver.support.ui import WebDriverWait
+from datetime import datetime, timedelta
+from dateutil.relativedelta import relativedelta
+from selenium.webdriver.common.keys import Keys
+from datetime import datetime
+import pandas as pd
+import urllib
+import time
+import mariadb
+import numpy as np
+from datetime import datetime
+import os 
+
+def main():
+    driver = wd.Chrome(executable_path= "chromedriver.exe")
+    driver = wd.Chrome(executable_path= "chromedriver.exe")
+    url = "https://www.airportal.go.kr/knowledge/statsnew/realtime/airline.jsp#"
+    driver.get(url)
+
+
+    try:
+        driver.switch_to.alert.accept()
+    except:
+        pass
+    driver.find_element_by_xpath('/html/body/form/table[3]/tbody/tr[2]/td[2]/table[3]/tbody/tr/td[1]/table/tbody/tr[2]/td[2]/table/tbody/tr/td[1]/table[1]/tbody/tr/td[3]/input').send_keys('lee960802')
+    driver.find_element_by_xpath('/html/body/form/table[3]/tbody/tr[2]/td[2]/table[3]/tbody/tr/td[1]/table/tbody/tr[2]/td[2]/table/tbody/tr/td[1]/table[2]/tbody/tr/td[3]/input').send_keys('8787181wlq')
+    driver.implicitly_wait(2)
+    driver.find_element_by_xpath('/html/body/form/table[3]/tbody/tr[2]/td[2]/table[3]/tbody/tr/td[1]/table/tbody/tr[2]/td[2]/table/tbody/tr/td[2]/input').click()
+
+    driver.get(url)
+
+    start_date = "20200101"
+    term_type = 2
+    end_date = "20220530"
+    end_temp = get_date_range_list(start_date, term_type)
+    loop_func(start_date,end_date,end_temp,term_type, driver)
+
+def get_date_range_list(start, term_type): #term_type = 0: day, 1: weeks, 2:month, 3: year
+    try:
+        start_date = datetime.strptime(start,"%Y%m%d")
+        if term_type == 0:
+            end_temp = start_date + timedelta(days=1)
+
+        elif term_type == 1:
+            end_temp = start_date + timedelta(weeks=1)
+
+        elif term_type == 2:
+            end_temp = start_date + relativedelta(months=1)
+
+        elif term_type == 3:
+            end_temp = start_date + relativedelta(years=1)
+        
+        end_temp = end_temp.strftime("%Y%m%d")
+
+        return end_temp
+    except:
+        print("get_date_range_list()error")
+
+def loop_func(start_date, end_date, end_temp, term, driver):
+
+    real_sdate = datetime.strptime(start_date, "%Y%m%d")
+    real_edate = datetime.strptime(end_date, "%Y%m%d")
+    while real_sdate < real_edate:
+        driver.find_element_by_xpath('//*[@id="dateStart"]/div/input').click()
+        driver.find_element_by_xpath('//*[@id="dateStart"]/div/input').send_keys('\n')
+        driver.find_element_by_xpath('//*[@id="dateStart"]/div/input').send_keys(Keys.BACKSPACE * 10)
+        driver.find_element_by_xpath('//*[@id="dateStart"]/div/input').send_keys(Keys.DELETE * 10)
+        driver.find_element_by_xpath('//*[@id="dateStart"]/div/input').send_keys(start_date)
+        driver.find_element_by_xpath('//*[@id="dateStart"]/div/input').send_keys(Keys.TAB)
+        end_temp = get_date_range_list(start_date, term)
+        driver.find_element_by_xpath('//*[@id="dateEnd"]/div/input').click()
+        driver.find_element_by_xpath('//*[@id="dateEnd"]/div/input').send_keys('\n')
+        driver.find_element_by_xpath('//*[@id="dateEnd"]/div/input').send_keys(Keys.BACKSPACE * 10)
+        driver.find_element_by_xpath('//*[@id="dateEnd"]/div/input').send_keys(Keys.DELETE * 10)
+        driver.find_element_by_xpath('//*[@id="dateEnd"]/div/input').send_keys(end_temp)
+        driver.find_element_by_xpath('//*[@id="dateEnd"]/div/input').send_keys(Keys.TAB)
+        time.sleep(2)
+        driver.find_element_by_xpath('//*[@id="realContents"]/div/div[2]/div[1]/div[1]/a[2]').click()
+        time.sleep(3)
+        driver.find_element_by_xpath('//*[@id="realContents"]/div/div[2]/div[1]/div[1]/a[1]').click()
+
+        
+
+        if term == 0:
+            real_sdate += timedelta(days=1)
+        elif term == 1:
+            real_sdate += timedelta(weeks=1)
+        elif term == 2:
+            real_sdate += relativedelta(months=1)
+        elif term == 3:
+            real_sdate += relativedelta(years=1)
+        time.sleep(2)
+        main_db(start_date, end_temp)
+        start_date = end_temp
+        
+def main_db(start_result, end_result):
+        df2 = read_excel(start_result, end_result)
+        time.sleep(2)
+        que_sql(make_sql(),db_connect(),df2)
+        del_file()
+
+def que_sql(sql,conn,df2):
+    #try:
+        data = list(df2. itertuples(index = False, name= None))
+        cs = conn.cursor()
+        cs.executemany(sql, data)
+        conn.commit()
+    #except:
+    #    print("que_sql()error")
+        
+def make_sql():
+    try:
+        sql = """
+        INSERT INTO airline.airline_ts  (
+            sdate,
+            edate,
+            corp_name,
+            intern_dome,
+            depart_arriv,
+            f_p_c,
+            value,
+            regi_dt,
+            mdf_dt
+        ) VALUES (
+            ?, ?, ?,
+            ?, ?, ?,
+            ?, ?, ?
+        )
+        """
+        return sql
+    except:
+        print("make_sql()error")
+
+def db_connect():
+    try:
+        conn = mariadb.connect(
+        user='eBEST_MS', 
+        password='eBEST_MS1!', 
+        database='airline', 
+        host='175.193.254.239',
+        port=9926)
+        return conn
+    except:
+        print("db_connect()error")
+
+def read_excel(start_date, end_date):
+        
+        df = pd.read_excel(io="C:/Users/eBEST/Downloads/항공사별수송실적.xlsx", usecols = "A,C,D,E,G,H,I,K")
+        df = df.drop([0,1], axis= 0)
+
+        column_names = ["sdate","edate","corp_name", "intern_dome",  "depart_arriv","f_p_c", "value", "regi_dt", "mdf_dt"] 
+        dep_arr = ['d','a']
+        fpc = ['f','p','c']
+        intern_dome_dict = {'국내선': 'd', '국제선': 'i','소계':'t', '합계': 'tot'}
+        df2 = pd.DataFrame(np.zeros((1, 9)),columns=column_names)
+        for i in range(len(df)):
+            df_tmp = pd.DataFrame(np.zeros((1, 9)),columns=column_names)
+            df_tmp['sdate'] = start_date
+            df_tmp['edate'] = end_date
+            for j in dep_arr:
+                df_tmp['corp_name'] = df.iloc[i,0]
+                df_tmp['intern_dome'] = intern_dome_dict[df.iloc[i,1]]
+                df_tmp['regi_dt'] = datetime.now().strftime("%Y%m%d")
+                df_tmp['mdf_dt'] = datetime.now().strftime("%Y%m%d")
+                for z in fpc:     
+                    if j == "d":
+                        df_tmp['depart_arriv'] = j
+                        if z == "f":
+                            df_tmp['f_p_c'] = z
+                            df_tmp['value'] = df.iloc[i,2]
+                        elif z == "p":
+                            df_tmp['f_p_c'] = z
+                            df_tmp['value'] = df.iloc[i,4]
+                        elif z == "c":
+                            df_tmp['f_p_c'] = z
+                            df_tmp['value'] = df.iloc[i,6]
+                    else:
+                        df_tmp['depart_arriv'] = j
+                        if z == "f":
+                            df_tmp['f_p_c'] = z
+                            df_tmp['value'] = df.iloc[i,3]
+                        elif z == "p":
+                            df_tmp['f_p_c'] = z
+                            df_tmp['value'] = df.iloc[i,5]
+                        elif z == "c":
+                            df_tmp['f_p_c'] = z
+                            df_tmp['value'] = df.iloc[i,7]
+                    df2 = df2.append(df_tmp)
+        df2.reset_index(drop=True, inplace=True)
+        df2 = df2.drop(df2.index[0])
+        return df2                
+
+def del_file():
+    file = "C:/Users/eBEST/Downloads/항공사별수송실적.xlsx"
+    if os.path.isfile(file):
+        os.remove(file)
+    else:
+        print(f"file:파일이없습니다")
+
+main()
