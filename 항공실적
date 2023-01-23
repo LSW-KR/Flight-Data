@@ -136,10 +136,10 @@ def db_connect():
     try:
         conn = mariadb.connect(
         user='eBEST_MS', 
-        password='eBEST_MS1!', 
+        password='###########', 
         database='airline', 
-        host='175.193.254.239',
-        port=9926)
+        host='###############',
+        port=####)
         return conn
     except:
         print("db_connect()error")
