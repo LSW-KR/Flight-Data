@@ -25,9 +25,9 @@ def db_connect():
 
     conn = mariadb.connect(
     user='eBEST_MS', 
-    password='eBEST_MS1!', 
+    password='#########', 
     database='airline', 
-    host='175.193.254.239',
+    host='##############',
     port=9926)
     return conn
 
