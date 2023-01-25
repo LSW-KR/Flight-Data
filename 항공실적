@@ -12,12 +12,12 @@ import numpy as np
 from datetime import datetime
 import os 
 
+#Main
 def main():
     driver = wd.Chrome(executable_path= "chromedriver.exe")
-    driver = wd.Chrome(executable_path= "chromedriver.exe")
+    #URL Setting
     url = "https://www.airportal.go.kr/knowledge/statsnew/realtime/airline.jsp#"
     driver.get(url)
-
 
     try:
         driver.switch_to.alert.accept()
@@ -27,16 +27,19 @@ def main():
     driver.find_element_by_xpath('/html/body/form/table[3]/tbody/tr[2]/td[2]/table[3]/tbody/tr/td[1]/table/tbody/tr[2]/td[2]/table/tbody/tr/td[1]/table[2]/tbody/tr/td[3]/input').send_keys('8787181wlq')
     driver.implicitly_wait(2)
     driver.find_element_by_xpath('/html/body/form/table[3]/tbody/tr[2]/td[2]/table[3]/tbody/tr/td[1]/table/tbody/tr[2]/td[2]/table/tbody/tr/td[2]/input').click()
-
     driver.get(url)
-
+    
+    #Setting Start/End Date
     start_date = "20200101"
-    term_type = 2
     end_date = "20220530"
+    
+    #term_type = 0: day, 1: weeks, 2:month, 3: year
+    term_type = 2
     end_temp = get_date_range_list(start_date, term_type)
     loop_func(start_date,end_date,end_temp,term_type, driver)
 
-def get_date_range_list(start, term_type): #term_type = 0: day, 1: weeks, 2:month, 3: year
+#Date Range Calculation Regarding Term Type
+def get_date_range_list(start, term_type): 
     try:
         start_date = datetime.strptime(start,"%Y%m%d")
         if term_type == 0:
@@ -57,10 +60,11 @@ def get_date_range_list(start, term_type): #term_type = 0: day, 1: weeks, 2:mont
     except:
         print("get_date_range_list()error")
 
+#Looping main_db function and downloading excel file n times regarding date range
 def loop_func(start_date, end_date, end_temp, term, driver):
-
     real_sdate = datetime.strptime(start_date, "%Y%m%d")
     real_edate = datetime.strptime(end_date, "%Y%m%d")
+    
     while real_sdate < real_edate:
         driver.find_element_by_xpath('//*[@id="dateStart"]/div/input').click()
         driver.find_element_by_xpath('//*[@id="dateStart"]/div/input').send_keys('\n')
@@ -79,9 +83,7 @@ def loop_func(start_date, end_date, end_temp, term, driver):
         driver.find_element_by_xpath('//*[@id="realContents"]/div/div[2]/div[1]/div[1]/a[2]').click()
         time.sleep(3)
         driver.find_element_by_xpath('//*[@id="realContents"]/div/div[2]/div[1]/div[1]/a[1]').click()
-
         
-
         if term == 0:
             real_sdate += timedelta(days=1)
         elif term == 1:
@@ -94,12 +96,14 @@ def loop_func(start_date, end_date, end_temp, term, driver):
         main_db(start_date, end_temp)
         start_date = end_temp
         
+#Get excel data and create df      
 def main_db(start_result, end_result):
         df2 = read_excel(start_result, end_result)
         time.sleep(2)
         que_sql(make_sql(),db_connect(),df2)
         del_file()
 
+#Que SQL
 def que_sql(sql,conn,df2):
     #try:
         data = list(df2. itertuples(index = False, name= None))
@@ -108,7 +112,8 @@ def que_sql(sql,conn,df2):
         conn.commit()
     #except:
     #    print("que_sql()error")
-        
+
+#Storing data into DB using SQL
 def make_sql():
     try:
         sql = """
@@ -131,7 +136,8 @@ def make_sql():
         return sql
     except:
         print("make_sql()error")
-
+        
+#DB connection setting
 def db_connect():
     try:
         conn = mariadb.connect(
@@ -144,6 +150,7 @@ def db_connect():
     except:
         print("db_connect()error")
 
+#Read Excel and reformat the data
 def read_excel(start_date, end_date):
         
         df = pd.read_excel(io="C:/Users/eBEST/Downloads/항공사별수송실적.xlsx", usecols = "A,C,D,E,G,H,I,K")
@@ -189,8 +196,9 @@ def read_excel(start_date, end_date):
                     df2 = df2.append(df_tmp)
         df2.reset_index(drop=True, inplace=True)
         df2 = df2.drop(df2.index[0])
-        return df2                
-
+        return df2               
+        
+#Delete excel file after data is stored into DB
 def del_file():
     file = "C:/Users/eBEST/Downloads/항공사별수송실적.xlsx"
     if os.path.isfile(file):
