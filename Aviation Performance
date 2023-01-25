@@ -23,8 +23,9 @@ def main():
         driver.switch_to.alert.accept()
     except:
         pass
-    driver.find_element_by_xpath('/html/body/form/table[3]/tbody/tr[2]/td[2]/table[3]/tbody/tr/td[1]/table/tbody/tr[2]/td[2]/table/tbody/tr/td[1]/table[1]/tbody/tr/td[3]/input').send_keys('lee960802')
-    driver.find_element_by_xpath('/html/body/form/table[3]/tbody/tr[2]/td[2]/table[3]/tbody/tr/td[1]/table/tbody/tr[2]/td[2]/table/tbody/tr/td[1]/table[2]/tbody/tr/td[3]/input').send_keys('8787181wlq')
+    #Airportal Username and Password 
+    driver.find_element_by_xpath('/html/body/form/table[3]/tbody/tr[2]/td[2]/table[3]/tbody/tr/td[1]/table/tbody/tr[2]/td[2]/table/tbody/tr/td[1]/table[1]/tbody/tr/td[3]/input').send_keys('##########')
+    driver.find_element_by_xpath('/html/body/form/table[3]/tbody/tr[2]/td[2]/table[3]/tbody/tr/td[1]/table/tbody/tr[2]/td[2]/table/tbody/tr/td[1]/table[2]/tbody/tr/td[3]/input').send_keys('##########')
     driver.implicitly_wait(2)
     driver.find_element_by_xpath('/html/body/form/table[3]/tbody/tr[2]/td[2]/table[3]/tbody/tr/td[1]/table/tbody/tr[2]/td[2]/table/tbody/tr/td[2]/input').click()
     driver.get(url)
