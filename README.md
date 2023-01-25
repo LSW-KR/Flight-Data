@@ -1,3 +1,6 @@
-#Aviation_Performance > The purpose of this code is to gather and compile domestic airline performance data through an aviation information portal. It is designed to automatically retrieve and store data on domestic and international flights, as well as overall totals, in a time-series format within a database. This code performs tasks including Excel download, data transformation, and conversion to a dataframe table.
+"""
+Aviation_Performance 
+> This script is using Selenium, a tool for automating web browsers, to scrape data from a website. It uses the Chrome browser and the chromedriver.exe file to open the website, enters login credentials, sets a date range, and then loops through a function that downloads data in the form of an excel file. The script also uses other libraries such as pandas, datetime, and mariadb for data manipulation and storage.
 
-#Stock_Reflection > This code retrieves stock data for specific airlines at specific intervals, and inserts it into a database.
+Stock_Reflection 
+> This code retrieves stock data for specific airlines at specific intervals, and inserts it into a database.
