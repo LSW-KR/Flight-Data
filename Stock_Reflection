@@ -4,46 +4,46 @@ import datetime
 import mariadb
 import time
 
+#Stock Type
 krx = fdr.StockListing('KRX')
-
+#Corporation Stock List 
 corp_dict= {'003490':'대한항공','020560':'아시아나항공','298690':'에어부산','089590':'제주항공','272450':'진에어','091810':'티웨이항공'}
+#Stock data start/end date
 start_dt = "20200101"
 end_dt = "20220530"
 
-
+#Creating SQL table in MariaDB
 def make_sql():
     try:
         sql = """
         INSERT INTO airline.airline_cp  ( Date, close, code, name ) VALUES (?, ?, ?, ?)
         """
         return sql
-
     except:
         print("make_sql()error")
-
+        
+#DB Connection Setting
 def db_connect():
-
     conn = mariadb.connect(
     user='eBEST_MS', 
     password='#########', 
     database='airline', 
     host='##############',
-    port=9926)
+    port=####)
     return conn
 
-
+#Que SQL
 def que_sql(sql,conn,df):
     #try:
     data = list(df.itertuples(index = False, name= None))
-    display(data)
     cs = conn.cursor()
-
-
     cs.executemany(sql, data)
     conn.commit()
     #except:
-    #    print("que_sql()error")
-         
+    #   print("que_sql()error")
+
+#Main
+#Create/Format Data and Dataframe
 def main():
     for keys,values in corp_dict.items():
         item_list = []
@@ -55,7 +55,5 @@ def main():
         df['Date']= df.Date.dt.strftime('%Y%m%d')
         df['code'] = keys
         df['name'] = values
-        
-        
         que_sql(make_sql(),db_connect(),df)
 main()
