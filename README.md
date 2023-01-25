@@ -1,4 +1,4 @@
-"""
+
 Aviation_Performance 
 > This script is using the Selenium library for Python to automate the process of scraping data from the airportal.go.kr website. It is using the Chrome webdriver to open the website, enter login credentials and navigate through the pages on the website. The script then sets the start and end date for data scraping, and calculates the date range for each iteration of the loop depending on the term type (day, week, month, or year)
 The script then calls the loop_func function, which loops through the website using the calculated date range, and each iteration it downloads an excel file of the data. After that, the script uses the mariadb library to save the data in a MariaDB database.
@@ -18,4 +18,4 @@ The code begins by importing the necessary libraries and defining some variables
 >This code can be used to scrape historical stock data for any list of companies, not just airline companies. To do this, the user would need to modify the "corp_dict" variable with the appropriate company codes and names, and adjust the stock data start and end date accordingly. The user also needs to make sure that the MariaDB credentials match their database's credentials.
 
 Note: the code is not in production level yet, thus it is important to consider error handling and other best practices while running this script.
-"""
+
