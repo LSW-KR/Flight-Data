@@ -9,12 +9,13 @@ It uses the os library to handle the operating system related tasks such as crea
 Stock_Reflection 
 > This code is used to scrape historical stock data for a list of airline companies listed on the KRX stock exchange, and then store that data in a MariaDB database. The code uses the FinanceDataReader library to scrape the stock data, and the mariadb library to connect to and interact with the database.
 The code begins by importing the necessary libraries and defining some variables such as KRX as Stock Listing, start and end date for stock data, corporation stock list and their codes, etc.
-The code then defines a number of functions:
+>The code then defines a number of functions:
 >>The make_sql() function is used to create an SQL query that will be used to insert data into the database.
 >>The db_connect() function is used to connect to the MariaDB database.
 >>The que_sql() function is used to execute the SQL query and insert the data into the database.
 >>The main() function is the main driver of the code. This function iterates through the corporation stock list and their codes, scrapes the historical stock data for each company using the FinanceDataReader library, formats the data into a pandas dataframe, and then inserts the data into the MariaDB database using the que_sql() function.
-This code can be used to scrape historical stock data for any list of companies, not just airline companies. To do this, the user would need to modify the "corp_dict" variable with the appropriate company codes and names, and adjust the stock data start and end date accordingly. The user also needs to make sure that the MariaDB credentials match their database's credentials.
+
+>This code can be used to scrape historical stock data for any list of companies, not just airline companies. To do this, the user would need to modify the "corp_dict" variable with the appropriate company codes and names, and adjust the stock data start and end date accordingly. The user also needs to make sure that the MariaDB credentials match their database's credentials.
 
 Note: the code is not in production level yet, thus it is important to consider error handling and other best practices while running this script.
 """
