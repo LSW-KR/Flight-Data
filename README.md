@@ -17,5 +17,3 @@ The code begins by importing the necessary libraries and defining some variables
 
 >This code can be used to scrape historical stock data for any list of companies, not just airline companies. To do this, the user would need to modify the "corp_dict" variable with the appropriate company codes and names, and adjust the stock data start and end date accordingly. The user also needs to make sure that the MariaDB credentials match their database's credentials.
 
-Note: the code is not in production level yet, thus it is important to consider error handling and other best practices while running this script.
-
